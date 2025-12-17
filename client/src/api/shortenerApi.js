@@ -11,6 +11,7 @@ const api = axios.create({
 
 export const shortenUrl = async (longUrl) => {
   const response = await api.post('/shorten', { longUrl });
+  // console.log(longUrl);
   return response.data;
 };
 

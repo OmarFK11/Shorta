@@ -55,6 +55,7 @@ router.get('/:shortCode', async (req, res) => {
     }
 
     const original = url.longUrl;
+
     const candidates = [];
 
     if (/^https?:\/\//i.test(original)) {
@@ -62,7 +63,6 @@ router.get('/:shortCode', async (req, res) => {
     } else {
       candidates.push(`https://${original}`, `http://${original}`);
     }
-
     let target = null;
     for (const candidate of candidates) {
       // Prefer HTTPS first, then HTTP fallback

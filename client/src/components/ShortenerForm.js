@@ -7,7 +7,7 @@ const ShortenerForm = ({ onShorten }) => {
 
   const ensureProtocol = (value) => {
     if (!/^https?:\/\//i.test(value)) {
-      return `http://${value}`;
+      return `https://${value}`;
     }
     return value;
   };
@@ -15,7 +15,7 @@ const ShortenerForm = ({ onShorten }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     const trimmed = longUrl.trim();
 
     if (!trimmed) {
@@ -24,6 +24,7 @@ const ShortenerForm = ({ onShorten }) => {
     }
 
     const candidate = ensureProtocol(trimmed);
+    // const candidate = trimmed;
 
     // Basic validation to avoid HTML5 native URL validation issues
     try {

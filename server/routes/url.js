@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Url = require('../models/Url');
 
+const checkSafeBrowsing = require('../utils/safeBrowsing');
 // Generate a random short code
 const generateShortCode = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -13,10 +14,23 @@ const generateShortCode = () => {
 };
 
 const normalizeUrl = (value) => {
-  if (!/^https?:\/\//i.test(value)) {
-    return `http://${value}`;
+  if (!value) return '';
+
+  let url = value.trim();
+
+  // If scheme is missing, add https://
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
   }
-  return value;
+
+  try {
+    // Parse the URL to ensure it’s valid
+    const parsed = new URL(url);
+    return parsed.href; // always returns a fully normalized URL
+  } catch (err) {
+    // Invalid URL input
+    return null;
+  }
 };
 
 // POST /api/shorten - Create a shortened URL
@@ -27,15 +41,35 @@ router.post('/shorten', async (req, res) => {
     if (!longUrl) {
       return res.status(400).json({ error: 'Long URL is required' });
     }
-
+    // console.log("long: " + longUrl);
     const normalizedUrl = normalizeUrl(longUrl);
 
     // Validate URL format
+    let parsedUrl;
+    // console.log("nor: " + normalizedUrl);
     try {
-      new URL(normalizedUrl);
+      parsedUrl = new URL(normalizedUrl);
     } catch (err) {
       return res.status(400).json({ error: 'Invalid URL format' });
     }
+
+    // 🚫 Block dangerous protocols
+    const allowedProtocols = ['http:', 'https:'];
+
+    if (!allowedProtocols.includes(parsedUrl.protocol)) {
+      return res.status(400).json({
+        error: 'Unsupported URL protocol'
+      });
+    }
+    // console.log("parsed: " + parsedUrl);
+    const isSafe = await checkSafeBrowsing(normalizedUrl);
+
+    if (!isSafe) {
+      return res.status(400).json({
+        error: 'This URL has been flagged as unsafe or malicious'
+      });
+    }
+
 
     // Check if URL already exists
     let url = await Url.findOne({ longUrl: normalizedUrl });
@@ -60,6 +94,7 @@ router.post('/shorten', async (req, res) => {
       longUrl: normalizedUrl,
       shortCode,
     });
+
 
     await url.save();
     res.json(url);
