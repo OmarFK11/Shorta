@@ -4,6 +4,7 @@ const Url = require('../models/Url');
 
 const checkSafeBrowsing = require('../utils/safeBrowsing');
 // Generate a random short code
+// (62)⁴ = 56800235584
 const generateShortCode = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let shortCode = '';

@@ -7,6 +7,9 @@ if (!GOOGLE_API_KEY) {
   console.warn('⚠️ GOOGLE_SAFE_BROWSING_KEY is not set');
 }
 
+//http://testsafebrowsing.appspot.com/s/malware.html
+
+
 const checkSafeBrowsing = (url) => {
   return new Promise((resolve) => {
     const body = JSON.stringify({
